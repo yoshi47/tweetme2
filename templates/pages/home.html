@@ -7,21 +7,33 @@
 {% block content %}
     Welcome to Tweetme 2
 
-    <script>
-    const xhr = new XMLHttpRequest()
-    const method = "GET" // "POST"
-    const url = "/tweets"
-    const responseType = "json"
+    <div id="tweets">
+        Replace me
+    </div>
 
-    xhr.responseType = responseType
-    xhr.open(method, url)
-    xhr.onload = function() {
-        console.log(xhr.response)
-        const serverResponse = xhr.response
-        var listedItems = xhr.response.response
-        console.log(listedItems)
-    }
-    xhr.send()
+    <script>
+        const tweetsElement = document.getElementById('tweets') // get an html element
+        tweetsElement.innerHTML = 'Loading...' // set new html in that element
+
+        var el1 = "<h1>Hi there1</h1>"
+        var el2 = "<h1>Hi there2</h1>"
+        var el3 = "<h1>Hi there3</h1>"
+        tweetsElement.innerHTML = el1 + el2 + el3
+
+        const xhr = new XMLHttpRequest()
+        const method = "GET" // "POST"
+        const url = "/tweets"
+        const responseType = "json"
+
+        xhr.responseType = responseType
+        xhr.open(method, url)
+        xhr.onload = function () {
+            console.log(xhr.response)
+            const serverResponse = xhr.response
+            var listedItems = xhr.response.response
+            console.log(listedItems)
+        }
+        xhr.send()
     </script>
 
 {% endblock content %}
