@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect
 from django.utils.http import is_safe_url
 
 from rest_framework.authentication import SessionAuthentication
-from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .forms import TweetForm
@@ -17,8 +17,10 @@ ALLOWED_HOSTS = settings.ALLOWED_HOSTS
 
 # Create your views here.
 def home_view(request, *args, **kwargs):
-    print(request.user or None)
-    return render(request, "pages/home.html", context={}, status=200)
+    username = None
+    if request.user.is_authenticated:
+        username = request.user.username
+    return render(request, "pages/home.html", context={"username": username}, status=200)
 
 
 @api_view(["POST"])  # http method the client == POST
@@ -30,13 +32,6 @@ def tweet_create_view(request, *args, **kwargs):
         serializer.save(user=request.user)
         return Response(serializer.data, status=201)
     return Response({}, status=400)
-
-
-@api_view(["GET"])
-def tweet_list_view(request, *args, **kwargs):
-    qs = Tweet.objects.all()
-    serializer = TweetSerializer(qs, many=True)
-    return Response(serializer.data)
 
 
 @api_view(["GET"])
@@ -87,6 +82,8 @@ def tweet_action_view(request, *args, **kwargs):
             return Response(serializer.data, status=200)
         elif action == "unlike":
             obj.likes.remove(request.user)
+            serializer = TweetSerializer(obj)
+            return Response(serializer.data, status=200)
         elif action == "retweet":
             new_tweet = Tweet.objects.create(
                 user=request.user,
@@ -94,8 +91,15 @@ def tweet_action_view(request, *args, **kwargs):
                 content=content,
             )
             serializer = TweetSerializer(new_tweet)
-            return Response(serializer.data, status=200)
+            return Response(serializer.data, status=201)
     return Response({}, status=200)
+
+
+@api_view(["GET"])
+def tweet_list_view(request, *args, **kwargs):
+    qs = Tweet.objects.all()
+    serializer = TweetSerializer(qs, many=True)
+    return Response(serializer.data, status=200)
 
 
 def tweet_create_view_pure_django(request, *args, **kwargs):
@@ -133,10 +137,10 @@ def tweet_list_view_pure_django(request, *args, **kwargs):
     return json data
     """
     qs = Tweet.objects.all()
-    tweet_list = [x.serialize() for x in qs]
+    tweets_list = [x.serialize() for x in qs]
     data = {
         "isUser": False,
-        "response": tweet_list
+        "response": tweets_list
     }
     return JsonResponse(data)
 
