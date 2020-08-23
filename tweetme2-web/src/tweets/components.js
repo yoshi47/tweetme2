@@ -1,11 +1,10 @@
 import React, {useEffect, useState} from "react"
 
-import {createTweet, loadTweets} from "../lookup";
+import {apiTweetCreate, apiTweetList} from "./lookup";
 
 export function TweetsComponent(props) {
     const textAreaRef = React.createRef()
     const [newTweets, setNewTweets] = useState([])
-    console.log('new value', newVal)
 
     const handleBackendUpdate = (response, status) => {
         let tempNewTweets = [...newTweets]
@@ -20,7 +19,7 @@ export function TweetsComponent(props) {
     const handleSubmit = (event) => {
         event.preventDefault()
         const newVal = textAreaRef.current.value
-        createTweet(newVal, handleBackendUpdate)
+        apiTweetCreate(newVal, handleBackendUpdate)
         textAreaRef.current.value = ''
     }
     return <div className={props.className}>
@@ -49,15 +48,15 @@ export function TweetList(props) {
 
     useEffect(() => {
         if (tweetsDidSet === false) {
-            const myCallback = (response, status) => {
+            const handleTweetListLookup = (response, status) => {
                 if (status === 200) {
                     setTweetsInit(response)
                     setTweetsDidSet(true)
                 } else {
-                    alert("there was an error")
+                    alert("There was an error")
                 }
             }
-            loadTweets(myCallback)
+            apiTweetList(handleTweetListLookup)
         }
     }, [tweetsInit, tweetsDidSet, setTweetsDidSet])
     return tweets.map((item, index) => {
